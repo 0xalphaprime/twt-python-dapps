@@ -10,11 +10,17 @@ logger = logging.getLogger(__name__)
 rollup_server = environ["ROLLUP_HTTP_SERVER_URL"]
 logger.info(f"HTTP rollup_server url is {rollup_server}")
 
-def add_report(data):
+def add_notice(data):
     logger.info(f"Adding notice {data}")
     notice = {"payload": str2hex(data)}
     response = requests.post(rollup_server + "/notice", json=notice)
     logger.info(f"Received notice status {response.status_code} body {response.content}")
+
+def add_report(output=""):
+    logger.info("Adding report" + output)
+    report = {"payload": str2hex(output)}
+    response = requests.post(rollup_server + "/report", json=report)
+    logger.info(f"Received report status {response.status_code}")
 
 def handle_advance(data):
     logger.info(f"Receieved advance request data {data}")
@@ -22,10 +28,6 @@ def handle_advance(data):
 
 def handle_inspect(data):
     logger.info(f"Received inspect request data {data}")
-    logger.info("Adding report")
-    report = {"payload": data["payload"]}
-    response = requests.post(rollup_server + "/report", json=report)
-    logger.info(f"Received report status {response.status_code}")
     return "accept"
 
 def create_challenge():
