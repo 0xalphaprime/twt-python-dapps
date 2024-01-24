@@ -1,6 +1,8 @@
 from os import environ
 import logging
 import requests
+from util import str2hex, hex2str
+from challenge import Challenge, Move
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -8,12 +10,14 @@ logger = logging.getLogger(__name__)
 rollup_server = environ["ROLLUP_HTTP_SERVER_URL"]
 logger.info(f"HTTP rollup_server url is {rollup_server}")
 
-def handle_advance(data):
-    logger.info(f"Received advance request data {data}")
-    logger.info("Adding notice")
-    notice = {"payload": data["payload"]}
+def add_report(data):
+    logger.info(f"Adding notice {data}")
+    notice = {"payload": str2hex(data)}
     response = requests.post(rollup_server + "/notice", json=notice)
     logger.info(f"Received notice status {response.status_code} body {response.content}")
+
+def handle_advance(data):
+    logger.info(f"Receieved advance request data {data}")
     return "accept"
 
 def handle_inspect(data):
@@ -24,9 +28,32 @@ def handle_inspect(data):
     logger.info(f"Received report status {response.status_code}")
     return "accept"
 
+def create_challenge():
+    pass
+
+def accept_challenge():
+    pass
+
+def reveal():
+    pass
+
+def get_challenges():
+    pass
+
+
 handlers = {
     "advance_state": handle_advance,
     "inspect_state": handle_inspect,
+}
+
+advance_method_handlers = {
+    "create_challenge": create_challenge,
+    "reveal": reveal,
+    "accept_challenge": accept_challenge,
+}
+
+inspect_method_handlers = {
+    "get_challenges": get_challenges,
 }
 
 finish = {"status": "accept"}
