@@ -3,6 +3,7 @@ import logging
 import requests
 from util import str2hex, hex2str
 from challenge import Challenge, Move
+import json
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
@@ -23,24 +24,54 @@ def add_report(output=""):
     logger.info(f"Received report status {response.status_code}")
 
 def handle_advance(data):
-    logger.info(f"Receieved advance request data {data}")
-    return "accept"
+    try:
+        payload = json.loads(hex2str(data["payload"]))
+    except:
+        return "reject"
+    
+    method = payload.get("method")
+    sender = data["metadata"]["msg_sender"]
+    logger.info(f"Received advance request - {payload}")
+
+    handler = advance_method_handlers.get(method)
+    if not handler:
+        add_report("invalid methof")
+        return "reject"
+    
+    return handler(payload, sender)
 
 def handle_inspect(data):
-    logger.info(f"Received inspect request data {data}")
+    try:
+        payload = json.loads(hex2str(data["payload"]))
+    except:
+        return "reject"
+    
+    method = payload.get("method")
+    sender = data["metadata"]["msg_sender"]
+    logger.info(f"Received inspect request - {payload}")
+
+    handler = inspect_method_handlers.get(method)
+    if not handler:
+        add_report("invalid methof")
+        return "reject"
+    
+    return handler()
+
+def create_challenge(payload, sender):
+    add_report("create challenge")
     return "accept"
 
-def create_challenge():
-    pass
+def accept_challenge(payload, sender):
+    add_report("accept challenge")
+    return "accept"
 
-def accept_challenge():
-    pass
-
-def reveal():
-    pass
+def reveal(payload, sender):
+    add_report("reveal challenger")
+    return "accept"
 
 def get_challenges():
-    pass
+    add_report("get challenges")
+    return "accept"
 
 
 handlers = {
@@ -59,6 +90,8 @@ inspect_method_handlers = {
 }
 
 finish = {"status": "accept"}
+
+{"method": "create_challenge"}
 
 while True:
     logger.info("Sending finish")
